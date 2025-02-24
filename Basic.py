@@ -111,8 +111,8 @@ st.markdown("""
 Add_CityData()
 
 with st.sidebar:
-    color = st.color_picker("Pick A Color", "#00f900")
-    st.write("The current color is", color)
+   # color = st.color_picker("Pick A Color", "#00f900")
+  #  st.write("The current color is", color)
     st.write("Explore Waterloo")
     with st.form(key= "waterlooma"):       
         parks = st.checkbox(":blue[Parks]", False)
