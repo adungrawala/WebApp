@@ -74,7 +74,7 @@ def Add_CityData():
 
 #adding location control
 folium.plugins.LocateControl().add_to(m)
-Add_CityData()
+
 
 
 # adding park data to popup#
@@ -97,15 +97,22 @@ def GeneratePopup_ToolTip(fields, tooltip):
     max_width=800,
  )
     return popup, tooltip
+
+
 st.markdown("""
 <style>
     [data-testid=stSidebar] {
-        background-color: #ff000010;
+        background-color: #e4efcd;
+        opacity: o.5
     }
 </style>
 """, unsafe_allow_html=True)
 
+Add_CityData()
+
 with st.sidebar:
+    color = st.color_picker("Pick A Color", "#00f900")
+    st.write("The current color is", color)
     st.write("Explore Waterloo")
     with st.form(key= "waterlooma"):       
         parks = st.checkbox(":blue[Parks]", False)
@@ -115,11 +122,10 @@ with st.sidebar:
         poi = st.checkbox(":blue[Points of Interest]")
         ion = st.checkbox(":blue[ION Stops]")
         parkingLots = st.checkbox(":blue[Parking Lots]")
-
-    
+  
         st.form_submit_button("Submit")
 
-
+##ff000010;
 
 if parks == True:
     fields = ["PARK_NAME", "ADDRESS", "PARK_TYPE", "PLAYGROUND", "TENNIS_CRT", "DIAMOND", "FIELDS", "BASKETBALL", "CRICKET", "RINKS", "TOBOGGAN", "WASHROOM"]
