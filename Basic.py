@@ -16,8 +16,8 @@ st.set_page_config( page_title=None,
     menu_items=None,)
 
 
-#color = st.color_picker("Pick A Color", "#00f900")
-#st.write("The current color is", color)
+color = st.color_picker("Pick A Color", "#00f900")
+st.write("The current color is", color)
 
 # Banner using Markdown
 st.markdown("""
@@ -81,12 +81,15 @@ m = folium.Map(location=[43.462400, -80.520811], tiles="CartoDB Positron", zoom_
  #Adding waterloo square location marker
 def Add_CityData():
     
-    folium.GeoJson(read_gdf(waterloo_boundary_url), overlay=True, zoom_on_click=True,
-                style_function=lambda feature: {'color': '#b91563',
+    # folium.GeoJson(read_gdf(waterloo_boundary_url), overlay=True, zoom_on_click=True,
+    #             style_function=lambda feature: {'color': '#b91563',
+    #     'weight': 1.5,'fillOpacity': 0.0}).add_to(m)
+    
+    
+    folium.GeoJson(read_gdf(RegionOfWaterloo_url), overlay=True, zoom_on_click=True,
+                style_function=lambda feature: {'color': '#4f096d',
         'weight': 1.5,'fillOpacity': 0.0}).add_to(m)
     
-    
-
 #adding location control
 folium.plugins.LocateControl().add_to(m)
 folium.plugins.Fullscreen().add_to(m)
@@ -141,7 +144,7 @@ with st.sidebar:
         
         bicycleParking = st.checkbox(":violet[Bicycle Parking]")
         library = st.checkbox(":violet[Library]")
-        bus_Stop = st.checkbox(":violet[Bus Stops]")
+        bus_Stop = st.checkbox(":violet[Bus Stops - Region of Waterloo]")
         st.form_submit_button(":violet[Submit]", use_container_width=False)#Submit buton for the form
         
            
@@ -230,26 +233,34 @@ if library == True:
                    marker=folium.Marker(icon=folium.Icon(icon='book',prefix='fa fa-book',
                                                          color="darkblue"))).add_to(m)
 
-if bus_Stop == True: 
+if bus_Stop == True:
+
     tooltip = ["Street","CrossStreet", "Municipality"]
     fields = ["Street","CrossStreet", "Municipality", "EasyGo"]
 
     popup, tooltip = GeneratePopup_ToolTip(fields, tooltip)
 
-    bus_gdf = read_gdf(GRT_Bus_Stop_url)
-    route_gdf = read_gdf(GRT_Bus_Route_url)
+       
+    ########Creating Marker Cluster for GRT Bus stop for Region Of Waterloo####################
 
-     #going through each row and dropping the frame with bus stops other than 'Waterloo'
-    for index,row in bus_gdf.iterrows(): # Looping over all points
-       i = bus_gdf[(bus_gdf.Municipality != city)].index 
-       bus_gdf = geopandas.GeoDataFrame.drop(bus_gdf,index=i)
+    # Create a MarkerCluster object
+    marker_cluster = folium.plugins.MarkerCluster().add_to(m)
 
-    folium.GeoJson(bus_gdf, overlay=True,popup=popup, 
-                   tooltip=tooltip, marker=folium.Marker(icon=folium.Icon(icon='bus',
-                                                                          prefix='fa fa-bus',color="darkpurple", angle=5))).add_to(m)
+    # Example of custom icons
+    custom_icon = folium.Icon(prefix='fa fa-bus', icon='bus', color='darkpurple')
+    folium.GeoJson(read_gdf(GRT_Bus_Stop_url), overlay=True,popup=popup, 
+                   tooltip=tooltip, marker=folium.Marker(icon=custom_icon)).add_to(marker_cluster)
+    
+    ########Creating Marker Cluster for GRT Bus Routes for Region Of Waterloo####################
+                   
+    folium.GeoJson(read_gdf(GRT_Bus_Route_url), overlay=True, zoom_on_click=True,
+                style_function=lambda feature: {'color': ' #f7b10b',
+        'weight': 1.5}).add_to(m)
+
     
    
-
+   
+#Adding to the main map
 st_folium(m,width = 1000, height=500)
 
 
