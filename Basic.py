@@ -1,29 +1,50 @@
+import folium.plugins
 import streamlit as st
 import pandas as pd
 import folium 
 from streamlit_folium import st_folium
 from folium import plugins
 import geopandas
-import leafmap.foliumap as leafmap
 
-if "center" not in st.session_state:
-    layout = "wide"
-else:
-    layout = "centered" if st.session_state.center else "wide"
 
-st.set_page_config(layout=layout)
+city = "Waterloo"
 
-st.checkbox(
-    "Viewing on a mobile?", key="center", value=st.session_state.get("center", False)
-)
+st.set_page_config( page_title=None,
+    page_icon=None,
+    layout="wide",
+    initial_sidebar_state="auto",
+    menu_items=None,)
 
-st.header("City of Waterloo")
 
-   
-   
-Roads_url = "https://services.arcgis.com/ZpeBVw5o1kjit7LT/arcgis/rest/services/Roads/FeatureServer/0/query?outFields=*&where=1%3D1&f=geojson"
+#color = st.color_picker("Pick A Color", "#00f900")
+#st.write("The current color is", color)
+
+# Banner using Markdown
+st.markdown("""
+     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+     <span style=“background-color: #dff9d7”>
+            <style>
+           
+              .banner {
+            background-color: #dff9d7;
+            text-align: center;
+            font-size: 30px;
+            padding: 20px;
+            color: #6a4687;}        
+    </style>   
+    <div class="banner">
+        Welcome to Waterloo!
+    </div>
+            <hr style='border: 1px solid black;'>
+""", unsafe_allow_html=True)
+
+
+
+#Roads_url = "https://services.arcgis.com/ZpeBVw5o1kjit7LT/arcgis/rest/services/Roads/FeatureServer/0/query?outFields=*&where=1%3D1&f=geojson"
 
 waterloo_boundary_url = "https://services.arcgis.com/ZpeBVw5o1kjit7LT/arcgis/rest/services/CityBoundary/FeatureServer/0/query?outFields=*&where=1%3D1&f=geojson"
+
+RegionOfWaterloo_url = "https://services1.arcgis.com/qAo1OsXi67t7XgmS/arcgis/rest/services/Municipal_Boundary/FeatureServer/0/query?outFields=*&where=1%3D1&f=geojson"
 
 gdf_park_url = "https://services.arcgis.com/ZpeBVw5o1kjit7LT/arcgis/rest/services/Parks/FeatureServer/0/query?outFields=*&where=1%3D1&f=geojson"
 
@@ -40,42 +61,35 @@ Parking_Spots_url = "https://services.arcgis.com/ZpeBVw5o1kjit7LT/arcgis/rest/se
 ION_Stops_url = "https://utility.arcgis.com/usrsvcs/servers/f063d1fb147847f796ce8c024e117419/rest/services/OpenData/OpenData/MapServer/5/query?outFields=*&where=1%3D1&f=geojson"
 
 
+bicycleParking_url = "https://services.arcgis.com/ZpeBVw5o1kjit7LT/arcgis/rest/services/BicycleParking/FeatureServer/0/query?outFields=*&where=1%3D1&f=geojson"
+
+libraries_url = "https://utility.arcgis.com/usrsvcs/servers/e20e47591d41407e95f85d73e9b90322/rest/services/OpenData/OpenData/MapServer/0/query?outFields=*&where=1%3D1&f=geojson"
+
+GRT_Bus_Stop_url = "https://utility.arcgis.com/usrsvcs/servers/52c4134809a94f85b31a2e9553de1358/rest/services/OpenData/OpenData/MapServer/3/query?outFields=*&where=1%3D1&f=geojson"
+
+GRT_Bus_Route_url = "https://utility.arcgis.com/usrsvcs/servers/16e0ab66dadf4044a5be144e9d88effb/rest/services/OpenData/OpenData/MapServer/4/query?outFields=*&where=1%3D1&f=geojson" 
+
 @st.cache_data
 def read_gdf(gdf_url):
-    
     gdf = geopandas.read_file(gdf_url)
     return gdf
 
-basemap = st.selectbox("Select the basemap of your choice", ("openstreetmap","CartoDB Positron","Cartodb dark_matter"), placeholder="Select the basemap")
-m = folium.Map(location=[43.462400, -80.520811], tiles=basemap, zoom_start=13, zoom_control=True, control_scale=True, key="waterloomap")
+
+m = folium.Map(location=[43.462400, -80.520811], tiles="CartoDB Positron", zoom_start=13, zoom_control=True, control_scale=True, key="waterloomap", disable_3d = True)
+ 
 
  #Adding waterloo square location marker
-
 def Add_CityData():
     
-    if(basemap != "Cartodb dark_matter"):
-
-        folium.GeoJson(read_gdf(waterloo_boundary_url), overlay=True, style_function=lambda feature: {'color': 'black', 
-            'weight': 2,  'fillOpacity': 0.1, 'border': 1}).add_to(m)
-        
-        folium.GeoJson(read_gdf(Roads_url), overlay=True, style_function=lambda feature: {'color': 'black',
-            'weight': 1}).add_to(m)
-    else:
-        folium.GeoJson(read_gdf(waterloo_boundary_url), overlay=True, style_function=lambda feature: {'color': 'yellow', 
-            'weight': 2,  'fillOpacity': 0.1, 'border': 1}).add_to(m)
-        folium.GeoJson(read_gdf(Roads_url), overlay=True, style_function=lambda feature: {'color': 'yellow',
-            'weight': 1}).add_to(m)
+    folium.GeoJson(read_gdf(waterloo_boundary_url), overlay=True, zoom_on_click=True,
+                style_function=lambda feature: {'color': '#b91563',
+        'weight': 1.5,'fillOpacity': 0.0}).add_to(m)
     
-    folium.Marker(
-    location=[43.462400, -80.520811],
-    popup="City of Waterloo",
-    tooltip="Waterloo, Ontario",
-    ).add_to(m)   
+    
 
 #adding location control
 folium.plugins.LocateControl().add_to(m)
-
-
+folium.plugins.Fullscreen().add_to(m)
 
 # adding park data to popup#
 def GeneratePopup_ToolTip(fields, tooltip):
@@ -85,7 +99,8 @@ def GeneratePopup_ToolTip(fields, tooltip):
     fields= fields,
     localize=True,
     labels=True,
-    style="background-color: yellow;",
+    max_width= 900,
+    style="background-color: violet;",
     )
     
     #adding tooltip
@@ -94,44 +109,49 @@ def GeneratePopup_ToolTip(fields, tooltip):
     localize=True,
     sticky=False,
     labels=True,
-    max_width=800,
+    max_width=900,
  )
     return popup, tooltip
 
+Add_CityData() #Calling the function to add roads and city boundary
 
 st.markdown("""
 <style>
     [data-testid=stSidebar] {
-        background-color: #e4efcd;
-        opacity: o.5
+        background-color: #dff9d7;
+        opacity: 1.0
     }
 </style>
 """, unsafe_allow_html=True)
 
-Add_CityData()
-
 with st.sidebar:
-   # color = st.color_picker("Pick A Color", "#00f900")
-  #  st.write("The current color is", color)
-    st.write("Explore Waterloo")
-    with st.form(key= "waterlooma"):       
-        parks = st.checkbox(":blue[Parks]", False)
-        trails = st.checkbox(":blue[Trails]")
-        sportField = st.checkbox(":blue[Sports Field]")
-        schools = st.checkbox(":blue[Schools]")
-        poi = st.checkbox(":blue[Points of Interest]")
-        ion = st.checkbox(":blue[ION Stops]")
-        parkingLots = st.checkbox(":blue[Parking Lots]")
-  
-        st.form_submit_button("Submit")
+    st.header(":violet[Explore Waterloo]")
+   
+       
+    with st.form(key= "waterlooma", enter_to_submit=True):     
+               
+        
+        parks = st.checkbox(":violet[Parks]", key="prk")
+        trails = st.checkbox(":violet[Trails]")
+        sportField = st.checkbox(":violet[Sports Field]")
+        schools = st.checkbox(":violet[Schools]")
+        poi = st.checkbox(":violet[Points of Interest]")
+        ion = st.checkbox(":violet[ION Stops]")
+        parkingLots = st.checkbox(":violet[Parking Lots]")
+        
+        bicycleParking = st.checkbox(":violet[Bicycle Parking]")
+        library = st.checkbox(":violet[Library]")
+        bus_Stop = st.checkbox(":violet[Bus Stops]")
+        st.form_submit_button(":violet[Submit]", use_container_width=False)#Submit buton for the form
+        
+           
+           
 
-##ff000010;
 
 if parks == True:
     fields = ["PARK_NAME", "ADDRESS", "PARK_TYPE", "PLAYGROUND", "TENNIS_CRT", "DIAMOND", "FIELDS", "BASKETBALL", "CRICKET", "RINKS", "TOBOGGAN", "WASHROOM"]
     tooltip = ["PARK_NAME", "ADDRESS"]
     popup, tooltip = GeneratePopup_ToolTip(fields, tooltip)
-    #read_gdf(gdf_park_url)
     folium.GeoJson(read_gdf(gdf_park_url), overlay=True,popup=popup, zoom_on_click=True, tooltip=tooltip, style_function=lambda feature: {'color': 'green',
         'weight': 2, 'fillColor': 'green'}).add_to(m)
     
@@ -150,20 +170,22 @@ if trails == True:
     popup, tooltip = GeneratePopup_ToolTip(fields, tooltip)
     
     folium.GeoJson(read_gdf(gdf_trails_pathways_url), overlay=True,popup=popup, zoom_on_click=True, tooltip=tooltip,
-                style_function=lambda feature: {'color': '#b10dbd',
-        'weight': 3,  'dashArray': '4,4'}).add_to(m)
+                style_function=lambda feature: {'color': 'rgb(182, 126, 12)',
+        'weight': 2,  'dashArray': '3,3'}).add_to(m)
 
 if schools == True:
     fields = ["NAME", "TYPE", "URL"]
     tooltip = ["NAME", "TYPE"]
     popup, tooltip = GeneratePopup_ToolTip(fields, tooltip)
-    folium.GeoJson(read_gdf(Schools_url), overlay=True, marker=folium.Marker(icon=folium.Icon(icon='star',color="orange")), popup=popup, zoom_on_click=True, tooltip=tooltip).add_to(m)  
+    folium.GeoJson(read_gdf(Schools_url), overlay=True, 
+                   marker=folium.Marker(icon=folium.Icon(icon='star',color="orange")), popup=popup, zoom_on_click=True, tooltip=tooltip).add_to(m)  
 
-if poi == True:
+if poi == True:#Place of Interest (poi)
     fields = ["FACILITY","OWNER", "TYPE"]
     tooltip = ["FACILITY","OWNER", "TYPE"]
     popup, tooltip = GeneratePopup_ToolTip(fields,tooltip)
-    folium.GeoJson(read_gdf(Points_Interest_url),zoom_on_click=True,overlay=True, marker=folium.Marker(icon=folium.Icon(icon='star',color="purple")), popup=popup, tooltip=tooltip).add_to(m)  
+    folium.GeoJson(read_gdf(Points_Interest_url),zoom_on_click=True,overlay=True, 
+                   marker=folium.Marker(icon=folium.Icon(icon='info-sign',color="red")), popup=popup, tooltip=tooltip).add_to(m)  
 
 if parkingLots == True:
     fields = ["NAME","ADDRESS","PERMIT_HRS","ACCESSIBLE", "MOTORCYCLE","DESCR","RESERVED","CAPACITY","TWOH_FREE","HOURLY"]
@@ -176,12 +198,60 @@ if ion == True:
     fields = ["StopName","StopLocation","StopStatus","StopDirection"]
     tooltip = ["StopName"]
     popup, tooltip = GeneratePopup_ToolTip(fields,tooltip)
-    folium.GeoJson(read_gdf(ION_Stops_url), overlay=True, marker=folium.Marker(icon=folium.Icon(icon='star',color="blue")), popup=popup, tooltip=tooltip).add_to(m) 
+    folium.GeoJson(read_gdf(ION_Stops_url), overlay=True, 
+                   marker=folium.Marker(icon=folium.Icon(icon='train',prefix='fa fa-train',color="lightblue")), 
+                   popup=popup, tooltip=tooltip).add_to(m) 
+
+
 
 #adding final map to streamlit
-#ith st.form(key="waterloomap"):
+if bicycleParking == True:
+    fields = [ "TYPE", "OWNED_BY", "DESCR", "ADDRESS", "CAPACITY",]
+    tooltip = ["DESCR", "ADDRESS", "CAPACITY"]
+    popup, tooltip = GeneratePopup_ToolTip(fields,tooltip)
+    
+    folium.GeoJson(read_gdf(bicycleParking_url), overlay=True, control=True, 
+                   marker=folium.Marker(icon=folium.Icon(icon='bicycle',prefix='fa', 
+                                                         color="cadetblue")), popup=popup, tooltip=tooltip).add_to(m) 
+    
 
-st_folium(m,width = 1000, height=725)
+if library == True:
+    fields = ["Name","Address","Phone", "Website"]
+    tooltip = ["Name","Address"]
+    popup, tooltip = GeneratePopup_ToolTip(fields,tooltip)
+
+    lib_gdf = read_gdf(libraries_url)
+    #going through each row and dropping the frame with library other than 'Waterloo'
+    for index,row in lib_gdf.iterrows(): # Looping over all points
+       i = lib_gdf[(lib_gdf.Municipality != city)].index 
+       lib_gdf = geopandas.GeoDataFrame.drop(lib_gdf,index=i)
+
+    folium.GeoJson(lib_gdf, overlay=True,popup=popup, tooltip=tooltip, 
+                   marker=folium.Marker(icon=folium.Icon(icon='book',prefix='fa fa-book',
+                                                         color="darkblue"))).add_to(m)
+
+if bus_Stop == True: 
+    tooltip = ["Street","CrossStreet", "Municipality"]
+    fields = ["Street","CrossStreet", "Municipality", "EasyGo"]
+
+    popup, tooltip = GeneratePopup_ToolTip(fields, tooltip)
+
+    bus_gdf = read_gdf(GRT_Bus_Stop_url)
+    route_gdf = read_gdf(GRT_Bus_Route_url)
+
+     #going through each row and dropping the frame with bus stops other than 'Waterloo'
+    for index,row in bus_gdf.iterrows(): # Looping over all points
+       i = bus_gdf[(bus_gdf.Municipality != city)].index 
+       bus_gdf = geopandas.GeoDataFrame.drop(bus_gdf,index=i)
+
+    folium.GeoJson(bus_gdf, overlay=True,popup=popup, 
+                   tooltip=tooltip, marker=folium.Marker(icon=folium.Icon(icon='bus',
+                                                                          prefix='fa fa-bus',color="darkpurple", angle=5))).add_to(m)
+    
+   
+
+st_folium(m,width = 1000, height=500)
+
 
 
 
