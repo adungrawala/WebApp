@@ -16,17 +16,17 @@ st.set_page_config( page_title=None,
     menu_items=None,)
 
 
-#color = st.color_picker("Pick A Color", "#00f900")
-#st.write("The current color is", color)
+color = st.color_picker("Pick A Color", "#00f900")
+st.write("The current color is", color)
 
 # Banner using Markdown
 st.markdown("""
      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-     <span style=“background-color: #dff9d7”>
+     <span style=“background-color: #daf2f7">
             <style>
            
               .banner {
-            background-color: #dff9d7;
+            background-color:  #daf2f7;
             text-align: center;
             font-size: 30px;
             padding: 20px;
@@ -60,6 +60,7 @@ Parking_Spots_url = "https://services.arcgis.com/ZpeBVw5o1kjit7LT/arcgis/rest/se
 
 ION_Stops_url = "https://utility.arcgis.com/usrsvcs/servers/f063d1fb147847f796ce8c024e117419/rest/services/OpenData/OpenData/MapServer/5/query?outFields=*&where=1%3D1&f=geojson"
 
+Hospitals_url = "https://services1.arcgis.com/qAo1OsXi67t7XgmS/arcgis/rest/services/Hospitals/FeatureServer/0/query?outFields=*&where=1%3D1&f=geojson"
 
 bicycleParking_url = "https://services.arcgis.com/ZpeBVw5o1kjit7LT/arcgis/rest/services/BicycleParking/FeatureServer/0/query?outFields=*&where=1%3D1&f=geojson"
 
@@ -75,7 +76,8 @@ def read_gdf(gdf_url):
     return gdf
 
 
-m = folium.Map(location=[43.462400, -80.520811], tiles="CartoDB Positron", zoom_start=13, zoom_control=True, control_scale=True, key="waterloomap", disable_3d = True)
+m = folium.Map(location=[43.462400, -80.520811], tiles="CartoDB Positron", zoom_start=13,
+                zoom_control=True, control_scale=True, key="waterloomap", disable_3d = True, min_zoom=0, max_zoom=30)
  
 
  #Adding waterloo square location marker
@@ -121,8 +123,9 @@ Add_CityData() #Calling the function to add roads and city boundary
 st.markdown("""
 <style>
     [data-testid=stSidebar] {
-        background-color: #dff9d7;
-        opacity: 1.0
+        background-color: #daf2f7;
+        opacity: 1.0,
+        contrast: 1.2
     }
 </style>
 """, unsafe_allow_html=True)
@@ -144,6 +147,7 @@ with st.sidebar:
         
         bicycleParking = st.checkbox(":violet[Bicycle Parking]")
         library = st.checkbox(":violet[Library]")
+        hospitals = st.checkbox(":violet[Hospitals]")
         bus_Stop = st.checkbox(":violet[Bus Stops - Region of Waterloo]")
         st.form_submit_button(":violet[Submit]", use_container_width=False)#Submit buton for the form
         
@@ -173,7 +177,7 @@ if trails == True:
     popup, tooltip = GeneratePopup_ToolTip(fields, tooltip)
     
     folium.GeoJson(read_gdf(gdf_trails_pathways_url), overlay=True,popup=popup, zoom_on_click=True, tooltip=tooltip,
-                style_function=lambda feature: {'color': 'rgb(182, 126, 12)',
+                style_function=lambda feature: {'color': 'red',
         'weight': 2,  'dashArray': '3,3'}).add_to(m)
 
 if schools == True:
@@ -181,14 +185,22 @@ if schools == True:
     tooltip = ["NAME", "TYPE"]
     popup, tooltip = GeneratePopup_ToolTip(fields, tooltip)
     folium.GeoJson(read_gdf(Schools_url), overlay=True, 
-                   marker=folium.Marker(icon=folium.Icon(icon='star',color="orange")), popup=popup, zoom_on_click=True, tooltip=tooltip).add_to(m)  
+                   marker=folium.Marker(icon=folium.Icon(icon='home',color="orange")), popup=popup, zoom_on_click=True, tooltip=tooltip).add_to(m)  
 
 if poi == True:#Place of Interest (poi)
     fields = ["FACILITY","OWNER", "TYPE"]
     tooltip = ["FACILITY","OWNER", "TYPE"]
     popup, tooltip = GeneratePopup_ToolTip(fields,tooltip)
-    folium.GeoJson(read_gdf(Points_Interest_url),zoom_on_click=True,overlay=True, 
-                   marker=folium.Marker(icon=folium.Icon(icon='info-sign',color="red")), popup=popup, tooltip=tooltip).add_to(m)  
+
+    gdf_poi = read_gdf(Points_Interest_url)
+
+    for row in gdf_poi.itertuples():
+        gdf_poi = gdf_poi.drop(gdf_poi[(gdf_poi['TYPE'] == 'Library') | (gdf_poi['TYPE'] == 'Fire Hall') | 
+                                       (gdf_poi['TYPE'] == 'Ambulance Station') |  (gdf_poi['TYPE'] == 'Police Station')].index)
+        
+
+    folium.GeoJson(gdf_poi,zoom_on_click=True,overlay=True, 
+                   marker=folium.Marker(icon=folium.Icon(icon='asterisk',color="darkblue")), popup=popup, tooltip=tooltip).add_to(m)  
 
 if parkingLots == True:
     fields = ["NAME","ADDRESS","PERMIT_HRS","ACCESSIBLE", "MOTORCYCLE","DESCR","RESERVED","CAPACITY","TWOH_FREE","HOURLY"]
@@ -202,7 +214,7 @@ if ion == True:
     tooltip = ["StopName"]
     popup, tooltip = GeneratePopup_ToolTip(fields,tooltip)
     folium.GeoJson(read_gdf(ION_Stops_url), overlay=True, 
-                   marker=folium.Marker(icon=folium.Icon(icon='train',prefix='fa fa-train',color="lightblue")), 
+                   marker=folium.Marker(icon=folium.Icon(icon='train',prefix='fa fa-train',color="lightgreen")), 
                    popup=popup, tooltip=tooltip).add_to(m) 
 
 
@@ -215,7 +227,7 @@ if bicycleParking == True:
     
     folium.GeoJson(read_gdf(bicycleParking_url), overlay=True, control=True, 
                    marker=folium.Marker(icon=folium.Icon(icon='bicycle',prefix='fa', 
-                                                         color="cadetblue")), popup=popup, tooltip=tooltip).add_to(m) 
+                                                         color="green")), popup=popup, tooltip=tooltip).add_to(m) 
     
 
 if library == True:
@@ -231,7 +243,7 @@ if library == True:
 
     folium.GeoJson(lib_gdf, overlay=True,popup=popup, tooltip=tooltip, 
                    marker=folium.Marker(icon=folium.Icon(icon='book',prefix='fa fa-book',
-                                                         color="darkblue"))).add_to(m)
+                                                         color="black"))).add_to(m)
 
 if bus_Stop == True:
 
@@ -248,6 +260,7 @@ if bus_Stop == True:
 
     # Example of custom icons
     custom_icon = folium.Icon(prefix='fa fa-bus', icon='bus', color='darkpurple')
+    
     folium.GeoJson(read_gdf(GRT_Bus_Stop_url), overlay=True,popup=popup, 
                    tooltip=tooltip, marker=folium.Marker(icon=custom_icon)).add_to(marker_cluster)
     
@@ -259,6 +272,13 @@ if bus_Stop == True:
 
     
    
+if hospitals == True:
+    fields = ["LANDMARK", "CIVIC_NO", "STREET"]
+    tooltip = ["LANDMARK", "CIVIC_NO", "STREET"]
+    popup, tooltip = GeneratePopup_ToolTip(fields,tooltip)
+    folium.GeoJson(read_gdf(Hospitals_url), overlay=True, 
+                   marker=folium.Marker(icon=folium.Icon(icon='home',color="darkred")), 
+                   popup=popup, tooltip=tooltip).add_to(m) 
    
 #Adding to the main map
 st_folium(m,width = 1000, height=500)
