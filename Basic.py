@@ -185,7 +185,7 @@ if schools == True:
     tooltip = ["NAME", "TYPE"]
     popup, tooltip = GeneratePopup_ToolTip(fields, tooltip)
     folium.GeoJson(read_gdf(Schools_url), overlay=True, 
-                   marker=folium.Marker(icon=folium.Icon(icon='home',color="orange", prefix = "glyphicon",)), popup=popup, zoom_on_click=True, tooltip=tooltip).add_to(m)  
+                   marker=folium.Marker(icon=folium.Icon(icon='home',color='orange', prefix = "glyphicon",)), popup=popup, zoom_on_click=True, tooltip=tooltip).add_to(m)  
 
 if poi == True:#Place of Interest (poi)
     fields = ["FACILITY","OWNER", "TYPE"]
