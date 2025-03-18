@@ -3,3 +3,5 @@ leafmap
 pandas
 geopandas
 streamlit-folium
+folium.plugins
+folium
