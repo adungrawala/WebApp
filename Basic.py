@@ -12,6 +12,7 @@ import osmnx as ox
 import pydeck as pdk
 
 city = "Waterloo"
+place_name = "waterloo,ontario"
 
 st.set_page_config( page_title=None,
     page_icon=None,
@@ -209,6 +210,7 @@ with st.sidebar:
 if imagery_View == True:
     tile = folium.TileLayer(
         tiles = 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+        #tiles = '<iframe src="https://www.google.com/maps/d/embed?mid=1-BmsGpk0VJqNE7xMBnQUa7QU_SYwokc&ehbc=2E312F" width="640" height="480"></iframe>',
         attr = 'Esri',
         name = 'Esri Satellite',
         overlay = False,
@@ -336,15 +338,22 @@ if hospitals == True:
     fields = ["LANDMARK", "CIVIC_NO", "STREET"]
     tooltip = ["LANDMARK", "CIVIC_NO", "STREET"]
     popup, tooltip = GeneratePopup_ToolTip(fields,tooltip)
+
+    # List key-value pairs for tags
+    tags = {'amenity': True, 'amenity': ['pharmacy', 'clinics']}   
+
+    pharmacy = ox.features_from_place(place_name, tags)
+
     folium.GeoJson(read_gdf(Hospitals_url), overlay=True, 
-                   marker=folium.Marker(icon=folium.Icon(icon='home',color="darkred", prefix = "glyphicon")), 
+                   marker=folium.Marker(icon=folium.Icon(icon='plus',color="darkred", prefix = "glyphicon")), 
                    popup=popup, tooltip=tooltip).add_to(m) 
 
+    folium.GeoJson(pharmacy, marker=folium.Marker(icon=folium.Icon(icon='info-sign',
+                                                         color="gray"))).add_to(m)
+    
+if supermarkets_malls == True:    
 
-if supermarkets_malls == True:
-    place_name = "waterloo,ontario"
-
-        # List key-value pairs for tags
+    # List key-value pairs for tags
     tags = {'shop': True, 'shop': ['supermarket', 'malls']}   
 
     buildings = ox.features_from_place(place_name, tags)
