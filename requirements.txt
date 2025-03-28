@@ -4,5 +4,8 @@ leafmap
 pandas
 geopandas
 streamlit-folium
+request
+osmnx
+pydeck
 
 
