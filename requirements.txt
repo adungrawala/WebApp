@@ -6,6 +6,6 @@ geopandas
 streamlit-folium
 request
 osmnx
-pydeck
+
 
 
