@@ -4,5 +4,5 @@ leafmap
 pandas
 geopandas
 streamlit-folium
-
+osmnx
 
