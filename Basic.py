@@ -6,10 +6,8 @@ import folium
 from streamlit_folium import st_folium
 from folium import plugins
 import geopandas
-import requests
-from streamlit_folium import folium_static
 import osmnx as ox
-import pydeck as pdk
+
 
 city = "Waterloo"
 place_name = "waterloo,ontario"
@@ -42,12 +40,8 @@ st.markdown("""
     </div>
             <hr style='border: 1px solid black;'>
 """, unsafe_allow_html=True)
-
-view1, view2 = st.columns([0.3,0.7], vertical_alignment="top")
-
-with view1:
-    imagery_View = st.checkbox(":violet[Satellite View]",  key="satviw")
-
+view = st.radio("Set Map View 👇",
+        ["Satellite View", "Light Mode", "Dark Mode"],horizontal=True)
 
 #Roads_url = "https://services.arcgis.com/ZpeBVw5o1kjit7LT/arcgis/rest/services/Roads/FeatureServer/0/query?outFields=*&where=1%3D1&f=geojson"
 
@@ -87,7 +81,14 @@ def read_gdf(gdf_url):
 m = folium.Map(location=[43.462400, -80.520811], tiles="CartoDB Positron", zoom_start=13,
                 zoom_control=True, control_scale=True, key="waterloomap", disable_3d = True, min_zoom=0, max_zoom=30)
  
+if view == "Light Mode":
+    m = folium.Map(location=[43.462400, -80.520811], tiles="CartoDB Positron", zoom_start=13,
+                zoom_control=True, control_scale=True, key="waterloomap", disable_3d = True, min_zoom=0, max_zoom=30)
 
+if view == "Dark Mode":
+    m = folium.Map(location=[43.462400, -80.520811], tiles="CartoDB Dark_Matter", zoom_start=13,
+                zoom_control=True, control_scale=True, key="waterloomap", disable_3d = True, min_zoom=0, max_zoom=30)
+    
  #Adding waterloo square location marker
 def Add_CityData():    
     
@@ -207,7 +208,7 @@ with st.sidebar:
 
         
            
-if imagery_View == True:
+if view == "Satellite View":
     tile = folium.TileLayer(
         tiles = 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
         #tiles = '<iframe src="https://www.google.com/maps/d/embed?mid=1-BmsGpk0VJqNE7xMBnQUa7QU_SYwokc&ehbc=2E312F" width="640" height="480"></iframe>',
@@ -306,7 +307,7 @@ if library == True:
 
     folium.GeoJson(lib_gdf, overlay=True,popup=popup, tooltip=tooltip, 
                    marker=folium.Marker(icon=folium.Icon(icon='book',prefix='fa fa-book',
-                                                         color="black"))).add_to(m)
+                                                         color="beige"))).add_to(m)
 
 if bus_Stop == True:
 
@@ -349,7 +350,7 @@ if hospitals == True:
                    popup=popup, tooltip=tooltip).add_to(m) 
 
     folium.GeoJson(pharmacy, marker=folium.Marker(icon=folium.Icon(icon='info-sign',
-                                                         color="gray"))).add_to(m)
+                                                         color="lightgray"))).add_to(m)
     
 if supermarkets_malls == True:    
 
