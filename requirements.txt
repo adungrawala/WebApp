@@ -5,5 +5,5 @@ pandas
 geopandas
 streamlit-folium
 osmnx
-folium.plugins
+
 
