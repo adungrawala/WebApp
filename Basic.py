@@ -41,7 +41,7 @@ st.markdown("""
             <hr style='border: 1px solid black;'>
 """, unsafe_allow_html=True)
 view = st.radio("Set Map View 👇",
-        ["Satellite View", "Light Mode", "Dark Mode"],horizontal=True)
+        ["Light Mode", "Satellite View","Dark Mode"],horizontal=True)
 
 #Roads_url = "https://services.arcgis.com/ZpeBVw5o1kjit7LT/arcgis/rest/services/Roads/FeatureServer/0/query?outFields=*&where=1%3D1&f=geojson"
 
@@ -201,7 +201,7 @@ with st.sidebar:
         hospitals = st.checkbox(":violet[Hospitals & Pharmacy]",  key="hsptl")
         bus_Stop = st.checkbox(":violet[Bus Stops - Region of Waterloo]",  key="busstp")        
         supermarkets_malls = st.checkbox(":violet[Supermarkets & Malls]",  key="spmkt")       
-        
+        evCharging = st.checkbox(":violet[EV Charging stations]",  key="evchstns")
         st.form_submit_button(":violet[Map the selection]", use_container_width=True)#Submit buton for the form
 
     st.button(":violet[Clear All Selection]", key="clrall", on_click=ClearAll_buttonClick, use_container_width=True)
@@ -269,12 +269,19 @@ if poi == True:#Place of Interest (poi)
                    marker=folium.Marker(icon=folium.Icon(icon='asterisk',color="darkblue", prefix = "glyphicon")), popup=popup, tooltip=tooltip).add_to(m)  
 
 if parkingLots == True:
-    fields = ["NAME","ADDRESS","PERMIT_HRS","ACCESSIBLE", "MOTORCYCLE","DESCR","RESERVED","CAPACITY","TWOH_FREE","HOURLY"]
-    tooltip = ["NAME","DESCR"]
+    fields = ["access","capacity"]
+    tooltip = ["parking","capacity"]
     popup, tooltip = GeneratePopup_ToolTip(fields, tooltip)
-    folium.GeoJson(read_gdf(Parking_Spots_url), overlay=True, popup=popup ,tooltip=tooltip,zoom_on_click=True,style_function=lambda feature: {'color': 'turquoise',
-        'weight': 1, 'fillColor': 'red', 'fillOpacity': 0.5} ).add_to(m)  
 
+    # List key-value pairs for tags
+    tags = {'amenity': True, 'amenity': ['parking']}   
+
+    #access and capacity colum
+    parking = ox.features_from_place(place_name, tags)
+    folium.GeoJson(parking, overlay=True, popup=popup, tooltip=tooltip,zoom_on_click=True,style_function=lambda feature: {'color': 'turquoise',
+        'weight': 1, 'fillColor': 'red', 'fillOpacity': 0.5} ).add_to(m)  
+    
+    
 if ion == True:
     fields = ["StopName","StopLocation","StopStatus","StopDirection"]
     tooltip = ["StopName"]
@@ -358,10 +365,25 @@ if supermarkets_malls == True:
     tags = {'shop': True, 'shop': ['supermarket', 'malls']}   
 
     buildings = ox.features_from_place(place_name, tags)
-
+    buildings = buildings.fillna('Data not available')
     #buildings.head()
     #st.write(buildings)
     folium.GeoJson(buildings, marker=folium.Marker(icon=folium.Icon(icon='info-sign',
                                                          color="pink"))).add_to(m)
+
+if evCharging == True:    
+    fields = ["brand", "access", "opening_hours"]
+    tooltip = ["opening_hours"]
+    popup, tooltip = GeneratePopup_ToolTip(fields,tooltip)
+
+    # List key-value pairs for tags
+    #amenity=cinema
+    tags = {'amenity': True, 'amenity': ['charging_station']}   
+
+    evstations = ox.features_from_place(place_name, tags)
+    evstations = evstations.fillna('Data not available') #filling null values in the data frame with the specfied value
+    folium.GeoJson(evstations, tooltip=tooltip,popup= popup, marker=folium.CircleMarker(radius=10, stroke=True, color='blue',fillOpacity=2.0, fillColor='green')).add_to(m)
+
+
 #Adding to the main map
 st_folium(m,width = 1000, height=500)
