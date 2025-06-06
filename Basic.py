@@ -289,7 +289,7 @@ if parkingLots == True:
     
     parking = ox.features_from_place(place_name, tags)
     parking = parking.fillna('Data not available')
-    parking = read_gdf(City_Operated_Parking_url)
+    #parking = read_gdf(City_Operated_Parking_url)
 
     
     folium.GeoJson(parking, overlay=True, popup=popup, tooltip=tooltip,zoom_on_click=True,style_function=lambda feature: {'color': 'turquoise',
