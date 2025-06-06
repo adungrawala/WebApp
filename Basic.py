@@ -287,7 +287,7 @@ if parkingLots == True:
 
     #access and capacity colum
     
-    parking = ox.features_from_place(place_name, tags)
+    parking = ox.features_from_place('Waterloo, Ontario', tags)
     parking = parking.fillna('Data not available')
     #parking = read_gdf(City_Operated_Parking_url)
 
@@ -407,5 +407,5 @@ view_state = pdk.ViewState(
 )
 
 #Adding to the main map
-st_folium(m,width = 1000, height=500)
-#folium_static(m,width = 1000, height=500)
+#st_folium(m,width = 1000, height=500)
+folium_static(m,width = 1000, height=500)
