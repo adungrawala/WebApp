@@ -1,16 +1,16 @@
 import folium.map
-import folium.plugins
 import streamlit as st
 import pandas as pd
 import folium 
 from streamlit_folium import st_folium
+from streamlit_folium import folium_static
 from folium import plugins
 import geopandas
 import osmnx as ox
-
+import pydeck as pdk
 
 city = "Waterloo"
-place_name = "waterloo,ontario"
+place_name = "Waterloo, Ontario"
 
 st.set_page_config( page_title=None,
     page_icon=None,
@@ -36,7 +36,7 @@ st.markdown("""
             color: #6a4687;}        
     </style>   
     <div class="banner">
-        Welcome to the City of Waterloo Map
+        Welcome to the City of Waterloo
     </div>
             <hr style='border: 1px solid black;'>
 """, unsafe_allow_html=True)
@@ -59,6 +59,8 @@ Schools_url = "https://services.arcgis.com/ZpeBVw5o1kjit7LT/arcgis/rest/services
 
 Points_Interest_url = "https://services.arcgis.com/ZpeBVw5o1kjit7LT/arcgis/rest/services/PointsOfInterest/FeatureServer/0/query?outFields=*&where=1%3D1&f=geojson"
 
+City_Operated_Parking_url = "https://services.arcgis.com/ZpeBVw5o1kjit7LT/arcgis/rest/services/ParkingLots/FeatureServer/0/query?outFields=*&where=1%3D1&f=geojson"
+
 Parking_Spots_url = "https://services.arcgis.com/ZpeBVw5o1kjit7LT/arcgis/rest/services/ParkingLots/FeatureServer/0/query?outFields=*&where=1%3D1&f=geojson"
 
 ION_Stops_url = "https://utility.arcgis.com/usrsvcs/servers/f063d1fb147847f796ce8c024e117419/rest/services/OpenData/OpenData/MapServer/5/query?outFields=*&where=1%3D1&f=geojson"
@@ -79,28 +81,30 @@ def read_gdf(gdf_url):
     return gdf
 
 m = folium.Map(location=[43.462400, -80.520811], tiles="CartoDB Positron", zoom_start=13,
-                zoom_control=True, control_scale=True, key="waterloomap", disable_3d = True, min_zoom=0, max_zoom=30)
+                zoom_control=True, control_scale=True, key="waterloomap")#, disable_3d = True, min_zoom=0, max_zoom=30)
  
 if view == "Light Mode":
     m = folium.Map(location=[43.462400, -80.520811], tiles="CartoDB Positron", zoom_start=13,
-                zoom_control=True, control_scale=True, key="waterloomap", disable_3d = True, min_zoom=0, max_zoom=30)
+                zoom_control=True, control_scale=True, key="waterloomap")#, disable_3d = True, min_zoom=0, max_zoom=30)
 
 if view == "Dark Mode":
     m = folium.Map(location=[43.462400, -80.520811], tiles="CartoDB Dark_Matter", zoom_start=13,
-                zoom_control=True, control_scale=True, key="waterloomap", disable_3d = True, min_zoom=0, max_zoom=30)
+                zoom_control=True, control_scale=True, key="waterloomap")#, disable_3d = True, min_zoom=0, max_zoom=30)
+#adding location control
+
     
  #Adding waterloo square location marker
-def Add_CityData():    
+
+def Add_CityData():
     
-    folium.GeoJson(read_gdf(RegionOfWaterloo_url), overlay=True, zoom_on_click=True,
-                style_function=lambda feature: {'color': '#4f096d',
+    folium.GeoJson(read_gdf(RegionOfWaterloo_url), overlay=True,
+                style_function=lambda feature: {'color': "#b9ea09",
         'weight': 1.5,'fillOpacity': 0.0}).add_to(m)
     
-    
-#adding location control
-folium.plugins.LocateControl().add_to(m)
-folium.plugins.Fullscreen().add_to(m)
-folium.plugins.MeasureControl().add_to(m)
+m.add_child(folium.plugins.LocateControl())
+m.add_child(folium.plugins.Fullscreen())
+m.add_child(folium.plugins.MeasureControl())
+
 
 
 # adding park data to popup#
@@ -141,42 +145,44 @@ st.markdown("""
 
 def Clearall_Checkbx():
     
-        if st.session_state["prk"] == True:
-            st.session_state["prk"] = False
-            parks = False
-        if st.session_state["trl"] == True:
-            st.session_state["trl"] = False
+        # if st.session_state["prk"] == True:
+        #     st.session_state["prk"] = False
+        #     parks = False
+        # if st.session_state["trl"] == True:
+        #     st.session_state["trl"] = False
 
-        if st.session_state["sptsfld"] == True:
-            st.session_state["sptsfld"] = False
+        # if st.session_state["sptsfld"] == True:
+        #     st.session_state["sptsfld"] = False
 
-        if st.session_state["schl"] == True:
-            st.session_state["schl"] = False
+        # if st.session_state["schl"] == True:
+        #     st.session_state["schl"] = False
 
-        if st.session_state["poi"] == True:
-            st.session_state["poi"] = False
+        # if st.session_state["poi"] == True:
+        #     st.session_state["poi"] = False
         
-        if st.session_state["ionstp"] == True:
-            st.session_state["ionstp"] = False
-            parks = False
+        # if st.session_state["ionstp"] == True:
+        #     st.session_state["ionstp"] = False
+        #     parks = False
         if st.session_state["prklots"] == True:
             st.session_state["prklots"] = False
 
         if st.session_state["bicprk"] == True:
             st.session_state["bicprk"] = False
 
-        if st.session_state["libry"] == True:
-            st.session_state["libry"] = False
+        # if st.session_state["libry"] == True:
+        #     st.session_state["libry"] = False
 
-        if st.session_state["hsptl"] == True:
-            st.session_state["hsptl"] = False
+        # if st.session_state["hsptl"] == True:
+        #     st.session_state["hsptl"] = False
         
-        if st.session_state["busstp"] == True:
-            st.session_state["busstp"] = False
+       # if st.session_state["busstp"] == True:
+       #     st.session_state["busstp"] = False
 
-        if st.session_state["spmkt"] == True:
-            st.session_state["spmkt"] = False
+        # if st.session_state["spmkt"] == True:
+        #     st.session_state["spmkt"] = False
 
+        #if st.session_state["evchstns"] == True:
+        #    st.session_state["evchstns"] = False
 
 def ClearAll_buttonClick():
     if st.session_state["clrall"]:
@@ -184,25 +190,25 @@ def ClearAll_buttonClick():
 
 
 with st.sidebar:
-    st.header(":violet[Explore Waterloo]")
+    st.header(":violet[Select to Search]")
      
     with st.form(key= "waterlooma", enter_to_submit=True):                    
         
-        parks = st.checkbox(":violet[Parks]", key="prk")
-        trails = st.checkbox(":violet[Trails]", key="trl")
-        sportField = st.checkbox(":violet[Sports Field]",  key="sptsfld")
-        schools = st.checkbox(":violet[Schools]",  key="schl")
-        poi = st.checkbox(":violet[Points of Interest]",  key="poi")
-        ion = st.checkbox(":violet[ION Stops]",  key="ionstp")
+        parks = False#st.checkbox(":violet[Parks]", key="prk", disabled=True)
+        trails = False#st.checkbox(":violet[Trails]", key="trl")
+        sportField = False#st.checkbox(":violet[Sports Field]",  key="sptsfld")
+        schools = False#st.checkbox(":violet[Schools]",  key="schl")
+        poi = False#st.checkbox(":violet[Points of Interest]",  key="poi")
+        ion = False#st.checkbox(":violet[ION Stops]",  key="ionstp")
         parkingLots = st.checkbox(":violet[Parking Lots]",  key="prklots")
         
         bicycleParking = st.checkbox(":violet[Bicycle Parking]",  key="bicprk")
-        library = st.checkbox(":violet[Library]",  key="libry")
-        hospitals = st.checkbox(":violet[Hospitals & Pharmacy]",  key="hsptl")
-        bus_Stop = st.checkbox(":violet[Bus Stops - Region of Waterloo]",  key="busstp")        
-        supermarkets_malls = st.checkbox(":violet[Supermarkets & Malls]",  key="spmkt")       
-        evCharging = st.checkbox(":violet[EV Charging stations]",  key="evchstns")
-        st.form_submit_button(":violet[Map the selection]", use_container_width=True)#Submit buton for the form
+        library = False#st.checkbox(":violet[Library]",  key="libry")
+        hospitals = False#st.checkbox(":violet[Hospitals & Pharmacy]",  key="hsptl")
+        bus_Stop = False #st.checkbox(":violet[Bus Stops]",  key="busstp")        
+        supermarkets_malls = False#st.checkbox(":violet[Supermarkets & Malls]",  key="spmkt")       
+        evCharging = False #st.checkbox(":violet[EV Charging stations]",  key="evchstns")
+        st.form_submit_button(":violet[Search]", use_container_width=True)#Submit buton for the form
 
     st.button(":violet[Clear All Selection]", key="clrall", on_click=ClearAll_buttonClick, use_container_width=True)
 
@@ -269,17 +275,24 @@ if poi == True:#Place of Interest (poi)
                    marker=folium.Marker(icon=folium.Icon(icon='asterisk',color="darkblue", prefix = "glyphicon")), popup=popup, tooltip=tooltip).add_to(m)  
 
 if parkingLots == True:
-    fields = ["access","capacity"]
-    tooltip = ["parking","capacity"]
+
+    fields = ["access","capacity","wheelchair", "fee",]
+    tooltip = ["access","capacity", "fee"]
+
+    
     popup, tooltip = GeneratePopup_ToolTip(fields, tooltip)
 
     # List key-value pairs for tags
     tags = {'amenity': True, 'amenity': ['parking']}   
 
     #access and capacity colum
+    
     parking = ox.features_from_place(place_name, tags)
+    parking = parking.fillna('Data not available')
+    #parking = read_gdf(City_Operated_Parking_url)
+    pdk.Layer(parking)
     folium.GeoJson(parking, overlay=True, popup=popup, tooltip=tooltip,zoom_on_click=True,style_function=lambda feature: {'color': 'turquoise',
-        'weight': 1, 'fillColor': 'red', 'fillOpacity': 0.5} ).add_to(m)  
+        'weight': 1, 'fillColor': 'red', 'fillOpacity': 0.5}, ).add_to(m)  
     
     
 if ion == True:
@@ -348,17 +361,21 @@ if hospitals == True:
     popup, tooltip = GeneratePopup_ToolTip(fields,tooltip)
 
     # List key-value pairs for tags
-    tags = {'amenity': True, 'amenity': ['pharmacy', 'clinics']}   
+    tags = {'amenity': True, 'amenity': ['pharmacy','drugstore', 'chemist','clinic']}   
 
     pharmacy = ox.features_from_place(place_name, tags)
+    pharmacy = pharmacy.fillna('Data not available') #filling null values in the data frame with the specfied value
 
     folium.GeoJson(read_gdf(Hospitals_url), overlay=True, 
                    marker=folium.Marker(icon=folium.Icon(icon='plus',color="darkred", prefix = "glyphicon")), 
-                   popup=popup, tooltip=tooltip).add_to(m) 
-
-    folium.GeoJson(pharmacy, marker=folium.Marker(icon=folium.Icon(icon='info-sign',
-                                                         color="lightgray"))).add_to(m)
+                   popup=popup, tooltip=tooltip).add_to(m)
     
+    fields = ["name", "opening_hours", "website"]
+    tooltip = ["name", "opening_hours"]
+    popup, tooltip = GeneratePopup_ToolTip(fields,tooltip)
+    
+    folium.GeoJson(pharmacy, popup=popup, tooltip=tooltip).add_to(m)   
+
 if supermarkets_malls == True:    
 
     # List key-value pairs for tags
@@ -384,6 +401,10 @@ if evCharging == True:
     evstations = evstations.fillna('Data not available') #filling null values in the data frame with the specfied value
     folium.GeoJson(evstations, tooltip=tooltip,popup= popup, marker=folium.CircleMarker(radius=10, stroke=True, color='blue',fillOpacity=2.0, fillColor='green')).add_to(m)
 
+view_state = pdk.ViewState(
+    latitude=40, longitude=-117, controller=True, zoom=2.4, pitch=30
+)
 
 #Adding to the main map
-st_folium(m,width = 1000, height=500)
+#st_folium(m,width = 1000, height=500)
+folium_static(m,width = 1000, height=500)
