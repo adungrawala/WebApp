@@ -407,5 +407,5 @@ view_state = pdk.ViewState(
 )
 
 #Adding to the main map
-#st_folium(m,width = 1000, height=500)
-folium_static(m,width = 1000, height=500)
+st_folium(m,width = 1000, height=500)
+#folium_static(m,width = 1000, height=500)
