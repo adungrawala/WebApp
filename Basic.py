@@ -10,7 +10,7 @@ import osmnx as ox
 import pydeck as pdk
 
 city = "Waterloo"
-place_name = ""
+
 
 st.set_page_config( page_title=None,
     page_icon="🚗",
@@ -177,6 +177,7 @@ def Clearall_Checkbx():
         #     parks = False
         if st.session_state["prklots"] == True:
             st.session_state["prklots"] = False
+           
 
         if st.session_state["bicprk"] == True:
             st.session_state["bicprk"] = False
@@ -228,7 +229,7 @@ with st.sidebar:
         evCharging = False #st.checkbox(":blue[EV Charging stations]",  key="evchstns")
         st.form_submit_button(":red[Search 🔎]", use_container_width=True)#Submit buton for the form
 
-    st.button(":blue[Clear All Selection 🧹]", key="clrall", on_click=ClearAll_buttonClick, use_container_width=True)
+    st.button(":blue[Clear All 🧹]", key="clrall", on_click=ClearAll_buttonClick, use_container_width=True)
 
    
 
@@ -307,8 +308,8 @@ if poi == True:#Place of Interest (poi)
 
 if parkingLots == True:
 
-    fields = ["access"]
-    tooltip = ["access"]
+    fields = ["access", "parking", "fee"]
+    tooltip = ["access", "parking", "fee"]
 
     
     popup, tooltip = GeneratePopup_ToolTip(fields, tooltip)
@@ -448,30 +449,37 @@ view_state = pdk.ViewState(
 
 #Adding textbox for user to enter the name of place
 
-#st.text_input("Enter the name of a place", place_name)
+#place_name = st.text_input("Enter the name of a place", key="user_input", max_chars=100)
 
-def Display_Place_Parking():
+def Display_Place_Parking(place_name):
     
-    if(place_name) :
-        st.write(place_name)
-        fields = ["access"]
-        tooltip = ["access"]
-        st.write(place_name)
-        popup, tooltip = GeneratePopup_ToolTip(fields, tooltip)
+    try:
 
-        # List key-value pairs for tags
-        tags = {'amenity': True, 'amenity': ['parking']}   
+        if(place_name) :
 
-        #access and capacity colum        
-        parking = ox.features_from_place(place_name, tags)
-        parking = parking.fillna('Data not available')
-        #parking = read_gdf(City_Operated_Parking_url)
-
+            st.session_state.user_input = ""        
+            fields = ["access1"]
+            tooltip = ["access1"]
         
-        folium.GeoJson(parking, overlay=True, popup=popup, tooltip=tooltip,zoom_on_click=True,style_function=lambda feature: {'color': 'purple',
-            'weight': 1, 'fillColor': 'pink', 'fillOpacity': 0.8}, ).add_to(m)  
+            popup, tooltip = GeneratePopup_ToolTip(fields, tooltip)
+
+            # List key-value pairs for tags
+            tags = {'amenity': True, 'amenity': ['parking']}   
+
+            #access and capacity colum        
+            parking = ox.features_from_place(place_name, tags)
+            parking = parking.fillna('Data not available')
+            #parking = read_gdf(City_Operated_Parking_url)
+
+            
+            folium.GeoJson(parking, overlay=True, popup=popup, tooltip=tooltip,zoom_on_click=True,style_function=lambda feature: {'color': 'purple',
+                'weight': 1, 'fillColor': 'pink', 'fillOpacity': 0.8}, ).add_to(m)  
+        else:
+            st.write(" :red[Enter the name of the city]")
+    except:
+        st.write(" :red[Invalid place name or Connection error]")
     
-#st.button("Go", on_click=Display_Place_Parking(), key="Gosearch")
+#st.button("Go", on_click=Display_Place_Parking(place_name), key="Gosearch")
 
 
 #Adding to the main map
